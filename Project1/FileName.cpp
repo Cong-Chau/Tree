@@ -1,4 +1,5 @@
 #include<iostream>
+#include<queue>
 using namespace std;
 
 struct Node {
@@ -50,6 +51,21 @@ void postOrder(Node* root) {//L-R-N (hau thu tu)
         cout << "  " << root->data;
     }
 }
+void levelOrder(Node* root) {// duyet theo muc
+    queue<Node*> queue;
+    queue.push(root);
+    while (!queue.empty()) {
+        Node* tmp = queue.front();
+        cout << "  " << tmp->data;
+        queue.pop();
+        if (tmp->left != NULL) {
+            queue.push(tmp->left);
+        }
+        if (tmp->right != NULL) {
+            queue.push(tmp->right);
+        }
+    }
+}
 
 void removeLeaf(Node*& leaf) {
     leaf = NULL;
@@ -90,13 +106,65 @@ void removeNode(Node*& root, int x) {
         return;
     }
 }
+
+void removeTree(Node*& tree) {
+    tree = NULL;
+}
+
+int heightTree(Node* root) {
+    if (root == NULL)
+        return 0;
+    int left = heightTree(root->left);
+    int right = heightTree(root->right);
+    return max(left, right) + 1;
+}
+
+int countNode(Node* root) {
+    if (root == NULL)
+        return 0;
+    return 1 + countNode(root->left) + countNode(root->right);
+}
+
+int sumNode(Node* root) {
+    if (root == NULL)
+        return 0;
+    return root->data + sumNode(root->left) + sumNode(root->right);
+}
+
+int heightNode(Node* root, int x) {
+    if (x == root->data)
+        return 0;
+    int height = 1;
+    while (root != NULL && root->data != x) {
+        if (x < root->data)
+            root = root->left;
+        if (x > root->data)
+            root = root->right;
+        height++;
+    }
+    if (root == NULL)
+        return -1;
+    return height;
+}
+
 void Menu(Node*& root) {
+    int a[] = { 3,-5,-9,-3,0,7,-8,9,-4,10,4,-7,15,-6 };
+    //            int n; cin >> n;
+    for (int i = 0; i < 14; i++) {
+        //                int data;
+        //                cout << "Data = "; cin >> data;
+        insertData(root, a[i]);
+    }
     while (1) {       
         cout << "\n=========Menu=========";
         cout << "\n0. Ket thuc";
         cout << "\n1. Nhap du lieu";
         cout << "\n2. Xuat du lieu";
         cout << "\n3. Xoa du lieu";
+        cout << "\n4. Chieu cao cua cay";
+        cout << "\n5. Dem so luong Node";
+        cout << "\n6. Tong cac Node";
+        cout << "\n7. Chieu cao cua 1 Node cho truoc";
         cout << "\n======================";
         int choose;
         cout << "\n\nChon: "; cin >> choose;  
@@ -105,25 +173,26 @@ void Menu(Node*& root) {
             return;
         }
         case 1: {
-            int a[] = { 3,-5,-9,-3,0,7,-8,9,-4,10,4,-7,15,-6 };
-//            int n; cin >> n;
-            for (int i = 0; i < 14; i++) {
-//                int data;
-//                cout << "Data = "; cin >> data;
-                insertData(root, a[i]);
-            }
-            system("pause");
-            system("cls");
-            break;
+//            int a[] = { 3,-5,-9,-3,0,7,-8,9,-4,10,4,-7,15,-6 };
+////            int n; cin >> n;
+//            for (int i = 0; i < 14; i++) {
+////                int data;
+////                cout << "Data = "; cin >> data;
+//                insertData(root, a[i]);
+//            }
+//            system("pause");
+//            system("cls");
+//            break;
         }
         case 2: {
-            //N-L-R
             cout << "\nTien thu tu:\n";
             preOrder(root);
             cout << "\nTrung thu tu:\n";
             inOrder(root);
             cout << "\nHau thu tu:\n";
             postOrder(root);
+            cout << "\nBFS:\n";
+            levelOrder(root);
             cout << endl;
             system("pause");
             system("cls");
@@ -143,6 +212,36 @@ void Menu(Node*& root) {
             system("cls");
             break;
         }
+        case 4: {
+            cout << "  " << heightTree(root) << endl;
+            cout << endl;
+            system("pause");
+            system("cls");
+            break;
+        }
+        case 5: {
+            cout << "So luong Node: " << countNode(root) << endl;
+            cout << endl;
+            system("pause");
+            system("cls");
+            break;
+        }
+        case 6: {
+            cout << "Tong ca Node: " << sumNode(root) << endl;
+            cout << endl;
+            system("pause");
+            system("cls");
+            break;
+        }
+        case 7: {
+            int x;
+            cout << "Node can tim chieu cao: "; cin >> x;
+            cout << "Chieu cao cua Node: " << heightNode(root, x) << endl;
+            cout << endl;
+            system("pause");
+            system("cls");
+            break;
+        }
         default: {
             system("cls");
             cout << "\nChon khong hop le!!";
@@ -157,43 +256,6 @@ int main() {
     Menu(root);
     return 0;
 }
-////////////////////////////////////////////////
-Node* createNode(int data) {
-	Node* node = new Node();
-	node->data = data;
-	node->left = NULL;
-	node->right = NULL;
-	return node;
-}
-
-Node* insertLevelOrder(int arr[], int i, int n) {
-    Node* root = NULL;
-    if (i < n) {
-        root = createNode(arr[i]);
-        root->left = insertLevelOrder(arr, (2 * i) + 1, n);
-        root->right = insertLevelOrder(arr, (2 * i) + 2, n);
-    }
-    return root;
-}
-void inorder(Node* root) {
-    if (root == NULL) {
-        return;
-    }
-    inorder(root->left);
-    cout << root->data << " ";
-    inorder(root->right);
-}
-/*
-int main() {
-    Node* root = createNode(1);
-    int a[] = { -1,-5,-9,-3,0,1,2,3,4,5,6,7,8,9 };
-    insertLevelOrder(a, 0, 10);
-    inorder(root);
-    return 0;
-}
-*/
-////////////////////////////////////////////////
-
 
 
 
