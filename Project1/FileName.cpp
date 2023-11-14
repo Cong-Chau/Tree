@@ -3,9 +3,9 @@
 using namespace std;
 
 struct Node {
-	int data;
-	Node* left;
-	Node* right;
+    int data;
+    Node* left;
+    Node* right;
 };
 
 ////////////////////////////////////////////////
@@ -16,20 +16,15 @@ void insertData(Node*& root, int data) {
     Node* tmp = new Node;
     tmp->data = data;
     tmp->left = tmp->right = NULL;
-    if (root == NULL) {
+    if (root == NULL)
         root = tmp;
-    }
-    else {
-        if (data < root->data) {
-            // Duyet qua trai de them phan tu x
+    else
+        if (data < root->data) 
             insertData(root->left, data);
-        }
-        else if (data > root->data) {
-            // Duyet qua phai de them phan tu x
+        else if (data > root->data)
             insertData(root->right, data);
-        }
-    }
 }
+
 void preOrder(Node* root) {//N-L-R (tien thu tu)
     if (root != NULL) {
         cout << "  " << root->data;
@@ -131,7 +126,7 @@ int sumNode(Node* root) {
     return root->data + sumNode(root->left) + sumNode(root->right);
 }
 
-int heightNode(Node* root, int x) {
+int findHeightNodeX(Node* root, int x) {
     if (x == root->data)
         return 0;
     int height = 1;
@@ -147,24 +142,159 @@ int heightNode(Node* root, int x) {
     return height;
 }
 
+int countLeaf(Node* root) {
+    if (root == NULL)
+        return 0;
+    if (root->left == NULL && root->right == NULL)
+        return 1;
+    else
+        return countLeaf(root->left) + countLeaf(root->right);
+}
+
+int levelNode(Node* root, Node* p) {
+    int level = -1;
+    if (root == NULL && p == NULL)
+        return level;
+    while (root != NULL) {
+        if (root->data > p->data) {
+            root = root->left;
+            level++;
+        }
+        else {
+            root = root->right;
+            level++;
+        }
+    }
+    return level;
+}
+
+int countLess(Node* root, int x) {
+    if (root == NULL)
+        return 0;
+    if (root->data < x)
+        return 1 + countLess(root->left, x) + countLess(root->right, x);
+    else
+        return countLess(root->left, x) + countLess(root->right, x);
+}
+
+int countGreater(Node* root, int x) {
+    if (root == NULL)
+        return 0;
+    if (root->data > x)
+        return 1 + countGreater(root->left, x) + countGreater(root->right, x);
+    else
+        return countGreater(root->left, x) + countGreater(root->right, x);
+}
+
+bool isBST(Node* root) {
+    if (root == NULL)
+        return true;
+    if (root->left != NULL)
+        if (root->data < root->left->data)
+            return false;
+    if (root->right != NULL)
+        if (root->data > root->right->data)
+            return false;
+    return isBST(root->left) && isBST(root->right);
+}
+
+bool isFullBST(Node* root) {
+    if (root == NULL)
+        return 0;
+    int n = heightTree(root);
+    if (n == 0 || n == 1)
+        return true;
+    queue<Node*>queue;
+    queue.push(root);
+    while (!queue.empty()) {
+        Node* tmp = queue.front();
+        queue.pop();
+        if (tmp->left == NULL || tmp->right == NULL)
+            return false;
+        queue.push(tmp->left);
+        queue.push(tmp->right);
+    }
+    return true;
+}
+
+
+////////////////////        AVL        //////////////////
+
+void rotateRight(Node*& root) {
+    Node* temp = root->left;
+    root->left = temp->right;
+    temp->right = root;
+    root = temp;
+}
+
+void rotateLeft(Node*& root) {
+    Node* temp = root->right;
+    root->right = temp->left;
+    temp->left = root;
+    root = temp;
+}
+
+void AVL(Node*& root) {
+    int balance = heightTree(root->left) - heightTree(root->right);
+    if (balance > 1) {          // left
+        while (abs(balance) > 1) {
+            Node* left = root->left;
+            int balanceChild = heightTree(left->left) - heightTree(left->right);
+            if (balanceChild < 0) {//right
+                rotateLeft(root->left);
+                rotateRight(root);
+            }
+            else
+                rotateRight(root);
+            balance = heightTree(root->left) - heightTree(root->right);
+        }
+    }
+    else if (balance < -1) {    // right
+        while (abs(balance) > 1) {
+            Node* right = root->right;
+            int balanceChild = heightTree(right->left) - heightTree(right->right);
+            if (balanceChild > 0) { // left
+                rotateRight(root->right);
+                rotateLeft(root);
+            }
+            else
+                rotateLeft(root);
+            balance = heightTree(root->left) - heightTree(root->right);
+        }
+    }
+    AVL(root->left);
+    AVL(root->right);
+}
+
+//////////////////////////////////////////
+
+
 void Menu(Node*& root) {
-    int a[] = { 3,-5,-9,-3,0,7,-8,9,-4,10,4,-7,15,-6 };
-    //            int n; cin >> n;
-    for (int i = 0; i < 14; i++) {
-        //                int data;
-        //                cout << "Data = "; cin >> data;
+    int a[] = { 3,-5,-9,-3,0,7,-8,9,-4,10,4,-7,15,-6 ,16,17 };
+//  int n; cin >> n;
+    for (int i = 0; i < 16; i++) {
+        //      int data;
+        //      cout << "Data = "; cin >> data;
+        //        insertData(root, a[i]);
         insertData(root, a[i]);
     }
     while (1) {       
         cout << "\n=========Menu=========";
-        cout << "\n0. Ket thuc";
-        cout << "\n1. Nhap du lieu";
-        cout << "\n2. Xuat du lieu";
-        cout << "\n3. Xoa du lieu";
-        cout << "\n4. Chieu cao cua cay";
-        cout << "\n5. Dem so luong Node";
-        cout << "\n6. Tong cac Node";
-        cout << "\n7. Chieu cao cua 1 Node cho truoc";
+        cout << "\n 0. Ket thuc";
+        cout << "\n 1. Nhap du lieu";
+        cout << "\n 2. Xuat du lieu";
+        cout << "\n 3. Xoa du lieu";
+        cout << "\n 4. Chieu cao cua cay";
+        cout << "\n 5. Dem so luong Node";
+        cout << "\n 6. Tong cac Node";
+        cout << "\n 7. Chieu cao cua 1 Node cho truoc";
+        cout << "\n 8. Can bang cay";
+        cout << "\n 9. So nut la";
+        cout << "\n10. Tang cua 1 nut";
+        cout << "\n11. So nut nho hon x";
+        cout << "\n12. So nut lon hon x";
+        cout << "\n13. Kiem tra BST";
+        cout << "\n14. Cay nhi phan tim kiem day du";
         cout << "\n======================";
         int choose;
         cout << "\n\nChon: "; cin >> choose;  
@@ -174,10 +304,10 @@ void Menu(Node*& root) {
         }
         case 1: {
 //            int a[] = { 3,-5,-9,-3,0,7,-8,9,-4,10,4,-7,15,-6 };
-////            int n; cin >> n;
+//            int n; cin >> n;
 //            for (int i = 0; i < 14; i++) {
-////                int data;
-////                cout << "Data = "; cin >> data;
+//                int data;
+//                cout << "Data = "; cin >> data;
 //                insertData(root, a[i]);
 //            }
 //            system("pause");
@@ -187,12 +317,12 @@ void Menu(Node*& root) {
         case 2: {
             cout << "\nTien thu tu:\n";
             preOrder(root);
-            cout << "\nTrung thu tu:\n";
+       /*     cout << "\nTrung thu tu:\n";
             inOrder(root);
             cout << "\nHau thu tu:\n";
             postOrder(root);
             cout << "\nBFS:\n";
-            levelOrder(root);
+            levelOrder(root);*/
             cout << endl;
             system("pause");
             system("cls");
@@ -236,8 +366,67 @@ void Menu(Node*& root) {
         case 7: {
             int x;
             cout << "Node can tim chieu cao: "; cin >> x;
-            cout << "Chieu cao cua Node: " << heightNode(root, x) << endl;
+            cout << "Chieu cao cua Node: " << findHeightNodeX(root, x) << endl;
             cout << endl;
+            system("pause");
+            system("cls");
+            break;
+        }
+        case 8: {
+            cout << "\nTien thu tu:\n";
+            preOrder(root);
+            cout << endl << endl;
+            AVL(root);
+            cout << "\nTien thu tu:\n";
+            preOrder(root);
+            cout << endl << endl;
+            system("pause");
+            system("cls");
+            break;
+        }
+        case 9: {
+            cout << "\nSo nut la: " << countLeaf(root) << endl;
+            system("pause");
+            system("cls");
+            break;
+        }
+        case 10: {
+            Node* p = new Node{ -4,NULL,NULL };
+            cout << "\nTang cua nut: " << levelNode(root, p) << endl;
+            system("pause");
+            system("cls");
+            break;
+        }
+        case 11: {
+            int x;
+            cout << "x = "; cin >> x;
+            cout << "\nSo nut nho hon " << x << ": " << countLess(root, x) << endl;
+            system("pause");
+            system("cls");
+            break;
+        }
+        case 12: {
+            int x;
+            cout << "x = "; cin >> x;
+            cout << "\nSo nut lon hon " << x << ": " << countGreater(root, x) << endl;
+            system("pause");
+            system("cls");
+            break;
+        }
+        case 13: {
+            if (isBST(root))
+                cout << "\nLa cay nhi phan tim kiem\n";
+            else
+                cout << "\nKhong la cay nhi phan tim kiem\n";
+            system("pause");
+            system("cls");
+            break;
+        }
+        case 14: {
+            if (isFullBST(root))
+                cout << "\nLa cay nhi phan tim kiem day du\n";
+            else
+                cout << "\nKhong la cay nhi phan tim kiem day du\n";
             system("pause");
             system("cls");
             break;
