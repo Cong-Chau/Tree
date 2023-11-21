@@ -3,135 +3,146 @@
 using namespace std;
 
 struct Node {
-	int data;
-	Node* left;
-	Node* right;
+    int data;
+    Node* left;
+    Node* right;
+    int height;
 };
 
-Node* create_node(int value) {
-	Node* newNode = new Node;
-	newNode->data = value;
-	newNode->right = nullptr;
-	newNode->left = nullptr;
-	return newNode;
+int heightNode(Node* root) {
+    if (root == NULL)
+        return 0;
+    return 1 + max(heightNode(root->left), heightNode(root->right));
 }
-int height(Node* root) {
-	if (root == nullptr) return 0;
-	return 1 + max(height(root->right), height(root->left));
+
+Node* createNode(int data) {
+    Node* tmp = new Node{ data,NULL,NULL ,1 };
+    return tmp;
 }
-void Browser_NRL(Node* root) {
-	if (root == nullptr)return;
-	cout << root->data << "    ";
-	Browser_NRL(root->right);
-	Browser_NRL(root->left);
+
+
+void rotateLeft(Node*& root) {
+    Node* temp = root->right;
+    root->right = temp->left;
+    temp->left = root;
+    root = temp;
 }
-void rotate_right(Node*& root) {
-	Node* tmp = root->left;
-	root->left = tmp->right;
-	tmp->right = root;
-	root = tmp;
+
+void rotateRight(Node*& root) {
+    Node* temp = root->left;
+    root->left = temp->right;
+    temp->right = root;
+    root = temp;
 }
-void rotate_left(Node*& root) {
-	Node* tmp = root->right;
-	root->right = tmp->left;
-	tmp->left = root;
-	root = tmp;
+
+
+void insertData(Node*& root, int data) {
+    Node* tmp = new Node;
+    tmp->data = data;
+    tmp->left = tmp->right = NULL;
+    if (root == NULL)
+        root = tmp;
+    else {
+        if (data < root->data) {
+            // Duyet qua trai de them phan tu x
+            insertData(root->left, data);
+        }
+        else if (data > root->data) {
+            // Duyet qua phai de them phan tu x
+            insertData(root->right, data);
+        }
+        else 
+            return;
+    }
+    int balance = heightNode(root->left) - heightNode(root->right);
+    if (balance > 1) {          // left
+        Node* left = root->left;
+        int balanceChild = heightNode(left->left) - heightNode(left->right);
+        if (balanceChild < 0) {// left-right
+            rotateLeft(root->left);
+            rotateRight(root);
+        }
+        else
+            rotateRight(root);
+    }
+    else if (balance < -1) {    // right
+        Node* right = root->right;
+        int balanceChild = heightNode(right->left) - heightNode(right->right);
+        if (balanceChild > 0) { // left-right
+            rotateRight(root->right);
+            rotateLeft(root);
+        }
+        else
+            rotateLeft(root);
+        balance = heightNode(root->left) - heightNode(root->right);
+    }
 }
-void insert(Node*& root, int value) { 
-	if (root == nullptr)
-		root = create_node(value);
-	else if (root->data < value)
-		insert(root->right, value);
-	else if (root->data > value)
-		insert(root->left, value);
-	int Valbalance = height(root->left) - height(root->right);
-	if (Valbalance > 1 && root->left->data < value) {
-		rotate_left(root->left);
-		rotate_right(root);
-	}
-	else if (Valbalance > 1 && root->left->data > value) {//left left
-		rotate_right(root);
-	}
-	else if (Valbalance < -1 && root->right->data < value) {//right right
-		rotate_left(root);
-	}
-	else if (Valbalance<-1 && root->right->data > value) {//right left
-		rotate_right(root->right);
-		rotate_left(root);
-	}
+void preOrder(Node* root) {//N-L-R (tien thu tu)
+    if (root != NULL) {
+        cout << "  " << root->data;/* << "(" << root->height << ")";*/
+        preOrder(root->left);
+        preOrder(root->right);
+    }
 }
-void delete_node_one_children(Node*& root) {
-	//khong con
-	if (root->right == nullptr && root->left == nullptr) {
-		root = nullptr;
-		return;
-	}
-	//node co 1 con  phai
-	Node* tmp = root;
-	if (root->left == nullptr && root->right != nullptr) {
-		root = root->right;
-		delete tmp;
-		return;
-	}
-	//node co 1 con trai
-	if (root->left != nullptr && root->right == nullptr) {
-		root = root->left;
-		delete tmp;
-		return;
-	}
+void levelOrder(Node* root) {
+    queue<Node*> queue;
+    queue.push(root);
+    while (!queue.empty()) {
+        Node* tmp = queue.front();
+        queue.pop();
+        cout << "  " << tmp->data;
+        if (tmp->left != NULL) {
+            queue.push(tmp->left);
+        }
+        if (tmp->right != NULL) {
+            queue.push(tmp->right);
+        }
+    }
 }
-int childre_max_left(Node*& root) {
-	if (root->right == nullptr) {
-		Node* tmp = root;
-		root = root->left;
-		int x = tmp->data;
-		delete tmp; 
-		return x;
-	}
-	return childre_max_left(root->right);
+
+bool isBST(Node* root) {
+    if (root == NULL)
+        return true;
+    if (root->left != NULL)
+        if (root->data < root->left->data)
+            return false;
+    if (root->right != NULL)
+        if (root->data > root->right->data)
+            return false;
+    return isBST(root->left) && isBST(root->right);
 }
-void delete_node_two_children(Node*& root) {
-	int temp = childre_max_left(root->left);
-	root->data = temp;
+
+bool isAVL(Node* root) {
+    if (!isBST(root))
+        return false;
+    queue<Node*>queue;
+    queue.push(root);
+    while (!queue.empty()) {
+        Node* tmp = queue.front();
+        queue.pop();
+        int balance = heightNode(tmp->left) - heightNode(tmp->right);
+        if (abs(balance) > 1)
+            return false;
+        if (tmp->left != NULL)
+            queue.push(tmp->left);
+        if (tmp->right != NULL)
+            queue.push(tmp->right);
+    }
+    return true;
 }
-int valueBlance(Node* root) {
-	return height(root->left) - height(root->right);
-}
-//xoa node 
-void delete_node(Node*& root, int value) {
-	if (root == NULL)
-		return;
-	if (root->data == value) {
-		if (root->left != nullptr and root->right != nullptr) {
-			delete_node_two_children(root);
-			delete_node(root->left, root->data);
-		}
-		else {
-			delete_node_one_children(root);
-			return;
-		}
-	}
-	else if (root->data > value) {
-		delete_node(root->left, value);
-	}
-	else if (root->data < value)
-		delete_node(root->right, value);
-	//2.tinh do lech
-	int Valbalance = valueBlance(root);
-	//3.quay
-	//left right
-	if (Valbalance > 1 && valueBlance(root->left) < 0) {
-		rotate_left(root->left);
-		rotate_right(root);
-	}
-	else if (Valbalance > 1 && valueBlance(root->left) >= 0) {//left left
-		rotate_right(root);
-	}
-	else if (Valbalance < -1 && valueBlance(root->right) <= 0) {//right right
-		rotate_left(root);
-	}
-	else if (Valbalance < -1 && valueBlance(root->right)>0) {//right left
-		rotate_right(root->right);
-		rotate_left(root);
-	}
+
+int main() {
+    Node* root = NULL;
+    int a[] = { 3,-5,-9,-3,0,7,-8,9,-4,10,4,-7,15,-6 ,16,17 };
+    for (int i = 0; i < 16; i++) {
+        insertData(root, a[i]);
+    }
+    cout << endl;
+    levelOrder(root);
+    if (isAVL(root))
+        cout << "\nDung\n\n";
+    else
+        cout << "\nSai\n\n";
+    cout << endl;
+    return 0;
 }
